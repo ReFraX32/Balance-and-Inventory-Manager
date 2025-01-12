@@ -10,6 +10,8 @@ import {
   Animated,
   Dimensions,
   TouchableOpacity,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -30,10 +32,20 @@ const SWIPE_THRESHOLD = 50;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MENU_PREFIX = 'BalanceApp_menu_';
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 const EntryItem = React.memo(({ entry, index, onEdit, onDelete, calculateSaldoDiario, calculateSaldoTotal, conversionMode, currencySymbol, theme }) => (
 
   <View style={styles.tableRow}>
-    <Text style={[styles.cell, { flex: 2 }, theme === 'dark' && styles.darkCell, theme === 'dark' && styles.darkDateText]}>{entry.fecha}</Text>
+    <Text style={[styles.cell, { flex: 2 }, theme === 'dark' && styles.darkCell, theme === 'dark' && styles.darkDateText]}>
+      {formatDate(entry.fecha)}
+    </Text>
     <Text style={[styles.cell, { flex: 4 }, theme === 'dark' && styles.darkCell, theme === 'dark' && styles.darkDescriptionText]} numberOfLines={2} ellipsizeMode="tail">{entry.descripcion}</Text>
     <Text style={[styles.cell, styles.ingresosCell, { flex: 2 }]}>
       {formatCurrency(entry.ingresos, conversionMode, currencySymbol)}
@@ -103,6 +115,7 @@ const Menu = ({ navigation }) => {
   const [deleteAlertVisible, setDeleteAlertVisible] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [isPortrait, setIsPortrait] = useState(Dimensions.get('window').height > Dimensions.get('window').width);
+  const [isLoading, setIsLoading] = useState(true);
 
   const panX = useRef(new Animated.Value(0)).current;
 
@@ -126,6 +139,7 @@ const Menu = ({ navigation }) => {
   }, []);
 
   const loadData = async () => {
+    setIsLoading(true);
     try {
       const savedData = await AsyncStorage.getItem('menuData');
       if (savedData) {
@@ -135,6 +149,8 @@ const Menu = ({ navigation }) => {
       }
     } catch (e) {
       console.error('Error al cargar los datos', e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -147,7 +163,6 @@ const Menu = ({ navigation }) => {
     }
   };
 
-  // Call saveData after any changes to saldoInicial or entries
   useEffect(() => {
     saveData();
   }, [saldoInicial, entries]);
@@ -340,7 +355,6 @@ const Menu = ({ navigation }) => {
 
   const keyExtractor = useCallback((item) => item.id, []);
 
-  // Sort entries by date (oldest to newest)
   const sortedEntries = useMemo(() => {
     return [...entries].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
   }, [entries]);
@@ -365,6 +379,36 @@ const Menu = ({ navigation }) => {
       </View>
     </View>
   );
+
+  const DateSelector = ({ value, onChange, theme }) => {
+    if (Platform.OS === 'web') {
+      return (
+        <input
+          type="date"
+          value={value instanceof Date ? value.toISOString().split('T')[0] : value}
+          onChange={(e) => onChange(null, new Date(e.target.value))}
+          style={{
+            padding: 10,
+            fontSize: 16,
+            backgroundColor: theme === 'dark' ? '#333' : '#fff',
+            color: theme === 'dark' ? '#fff' : '#000',
+            border: '1px solid #ccc',
+            borderRadius: 5,
+            width: '100%'
+          }}
+        />
+      );
+    }
+
+    return (
+      <DateTimePicker
+        value={value instanceof Date ? value : new Date(value)}
+        mode="date"
+        display="default"
+        onChange={onChange}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={menuStyles.container}>
@@ -392,46 +436,54 @@ const Menu = ({ navigation }) => {
             <MaterialIcons name="chevron-left" size={24} color="#888" />
           </TouchableOpacity>
           <Text style={[styles.title]}>{languages[language].balanceManagement}</Text>
-          <View style={[styles.tableContainer, theme === 'dark' && styles.darkTableContainer]}>
-            <View style={[styles.tableHeader, theme === 'dark' && styles.darkTableHeader]}>
-              <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell, theme === 'dark' && styles.darkDateText]}>{languages[language].date}</Text>
-              <Text style={[styles.headerCell, { flex: 4 }, theme === 'dark' && styles.darkHeaderCell, theme === 'dark' && styles.darkDescriptionText]}>{languages[language].description}</Text>
-              <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].income}</Text>
-              <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].expenses}</Text>
-              <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].dailyBalance}</Text>
-              <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].totalBalance}</Text>
-              <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].actions}</Text>
-            </View>
-            <FlatList
-              data={sortedEntries}
-              renderItem={renderItem}
-              keyExtractor={keyExtractor}
-              contentContainerStyle={[
-                styles.listContentContainer,
-                sortedEntries.length === 0 && styles.emptyListContainer
-              ]}
-              ListEmptyComponent={renderEmptyComponent}
-            />
-          </View>
           
-          <View style={[styles.bottomButtonsContainer, theme === 'dark' && styles.darkBottomButtonsContainer]}>
-            <Pressable style={[styles.bottomButton, styles.saveButton]} onPress={() => setSaveModalVisible(true)}>
-              <MaterialIcons name="save" size={24} color="#FFFFFF" />
-              <Text style={styles.buttonText}>{languages[language].save}</Text>
-            </Pressable>
-            <Pressable style={[styles.bottomButton, styles.loadButton]} onPress={() => setLoadModalVisible(true)}>
-              <MaterialIcons name="folder-open" size={24} color="#FFFFFF" />
-              <Text style={styles.buttonText}>{languages[language].load}</Text>
-            </Pressable>
-            <Pressable style={[styles.bottomButton, styles.addButton]} onPress={() => setAddBalanceModalVisible(true)}>
-              <MaterialIcons name="add" size={24} color="#FFFFFF" />
-              <Text style={styles.buttonText}>{languages[language].add}</Text>
-            </Pressable>
-          </View>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={theme === 'dark' ? '#FFFFFF' : '#000000'} />
+            </View>
+          ) : (
+            <>
+              <View style={[styles.tableContainer, theme === 'dark' && styles.darkTableContainer]}>
+                <View style={[styles.tableHeader, theme === 'dark' && styles.darkTableHeader]}>
+                  <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell, theme === 'dark' && styles.darkDateText]}>{languages[language].date}</Text>
+                  <Text style={[styles.headerCell, { flex: 4 }, theme === 'dark' && styles.darkHeaderCell, theme === 'dark' && styles.darkDescriptionText]}>{languages[language].description}</Text>
+                  <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].income}</Text>
+                  <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].expenses}</Text>
+                  <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].dailyBalance}</Text>
+                  <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].totalBalance}</Text>
+                  <Text style={[styles.headerCell, { flex: 2 }, theme === 'dark' && styles.darkHeaderCell]}>{languages[language].actions}</Text>
+                </View>
+                <FlatList
+                  data={sortedEntries}
+                  renderItem={renderItem}
+                  keyExtractor={keyExtractor}
+                  contentContainerStyle={[
+                    styles.listContentContainer,
+                    sortedEntries.length === 0 && styles.emptyListContainer
+                  ]}
+                  ListEmptyComponent={renderEmptyComponent}
+                />
+              </View>
+              
+              <View style={[styles.bottomButtonsContainer, theme === 'dark' && styles.darkBottomButtonsContainer]}>
+                <Pressable style={[styles.bottomButton, styles.saveButton]} onPress={() => setSaveModalVisible(true)}>
+                  <MaterialIcons name="save" size={24} color="#FFFFFF" />
+                  <Text style={styles.buttonText}>{languages[language].save}</Text>
+                </Pressable>
+                <Pressable style={[styles.bottomButton, styles.loadButton]} onPress={() => setLoadModalVisible(true)}>
+                  <MaterialIcons name="folder-open" size={24} color="#FFFFFF" />
+                  <Text style={styles.buttonText}>{languages[language].load}</Text>
+                </Pressable>
+                <Pressable style={[styles.bottomButton, styles.addButton]} onPress={() => setAddBalanceModalVisible(true)}>
+                  <MaterialIcons name="add" size={24} color="#FFFFFF" />
+                  <Text style={styles.buttonText}>{languages[language].add}</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
         </Animated.View>
       </PanGestureHandler>
 
-      {/* Save Modal */}
       <ScrollableModal
         visible={saveModalVisible}
         onClose={() => setSaveModalVisible(false)}
@@ -456,7 +508,6 @@ const Menu = ({ navigation }) => {
         </View>
       </ScrollableModal>
 
-      {/* Load Modal */}
       <ScrollableModal
         visible={loadModalVisible}
         onClose={() => setLoadModalVisible(false)}
@@ -493,7 +544,6 @@ const Menu = ({ navigation }) => {
         />
       </ScrollableModal>
 
-      {/* Add Balance Entry Modal */}
       <ScrollableModal
         visible={addBalanceModalVisible}
         onClose={() => setAddBalanceModalVisible(false)}
@@ -501,23 +551,41 @@ const Menu = ({ navigation }) => {
         theme={theme}
         style={menuStyles.addBalanceModalView}
       >
-        <Pressable style={styles.dateInput} onPress={() => setShowDatePicker(true)}>
-          <Text style={[styles.datePickerText, theme === 'dark' && styles.darkText]}>
-            <MaterialIcons name="date-range" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} /> {newBalanceEntry.fecha.toISOString().split('T')[0]}
-          </Text>
-        </Pressable>
-        {showDatePicker && (
-          <DateTimePicker
-            value={newBalanceEntry.fecha}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                setNewBalanceEntry({...newBalanceEntry, fecha: selectedDate});
-              }
-            }}
-          />
+        {Platform.OS === 'web' ? (
+          <View style={[styles.modalInputContainer, theme === 'dark' && styles.darkModalInputContainer]}>
+            <MaterialIcons name="date-range" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} />
+            <DateSelector
+              value={newBalanceEntry.fecha}
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setNewBalanceEntry({...newBalanceEntry, fecha: selectedDate});
+                }
+              }}
+              theme={theme}
+            />
+          </View>
+        ) : (
+          <>
+            <Pressable style={styles.dateInput} onPress={() => setShowDatePicker(true)}>
+              <Text style={[styles.datePickerText, theme === 'dark' && styles.darkText]}>
+                <MaterialIcons name="date-range" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} /> 
+                {newBalanceEntry.fecha.toISOString().split('T')[0]}
+              </Text>
+            </Pressable>
+            {showDatePicker && (
+              <DateTimePicker
+                value={newBalanceEntry.fecha}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    setNewBalanceEntry({...newBalanceEntry, fecha: selectedDate});
+                  }
+                }}
+              />
+            )}
+          </>
         )}
         <View style={[styles.modalInputContainer, theme === 'dark' && styles.darkModalInputContainer]}>
           <MaterialIcons name="description" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} />
@@ -558,7 +626,6 @@ const Menu = ({ navigation }) => {
         </View>
       </ScrollableModal>
 
-      {/* Edit Entry Modal */}
       <ScrollableModal
         visible={editModalVisible}
         onClose={() => setEditModalVisible(false)}
@@ -568,26 +635,43 @@ const Menu = ({ navigation }) => {
       >
         {editingEntry && (
           <View style={[styles.editEntryModalContent, theme === 'dark' && styles.darkModalView]}>
-            <View style={[styles.modalInputContainer, theme === 'dark' && styles.darkModalInputContainer]}>
-              <MaterialIcons name="date-range" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} />
-              <Pressable onPress={() => setShowDatePicker(true)}>
-                <Text style={[styles.datePickerText, theme === 'dark' && styles.darkText]}>
-                  {editingEntry.fecha}
-                </Text>
-              </Pressable>
-            </View>
-            {showDatePicker && (
-              <DateTimePicker
-                value={new Date(editingEntry.fecha)}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  setShowDatePicker(false);
-                  if (selectedDate) {
-                    setEditingEntry({...editingEntry, fecha: selectedDate.toISOString().split('T')[0]});
-                  }
-                }}
-              />
+            {Platform.OS === 'web' ? (
+              <View style={[styles.modalInputContainer, theme === 'dark' && styles.darkModalInputContainer]}>
+                <MaterialIcons name="date-range" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} />
+                <DateSelector
+                  value={editingEntry.fecha}
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setEditingEntry({...editingEntry, fecha: selectedDate.toISOString().split('T')[0]});
+                    }
+                  }}
+                  theme={theme}
+                />
+              </View>
+            ) : (
+              <>
+                <View style={[styles.modalInputContainer, theme === 'dark' && styles.darkModalInputContainer]}>
+                  <MaterialIcons name="date-range" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} />
+                  <Pressable onPress={() => setShowDatePicker(true)}>
+                    <Text style={[styles.datePickerText, theme === 'dark' && styles.darkText]}>
+                      {editingEntry.fecha}
+                    </Text>
+                  </Pressable>
+                </View>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={new Date(editingEntry.fecha)}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        setEditingEntry({...editingEntry, fecha: selectedDate.toISOString().split('T')[0]});
+                      }
+                    }}
+                  />
+                )}
+              </>
             )}
             <View style={[styles.modalInputContainer, theme === 'dark' && styles.darkModalInputContainer]}>
               <MaterialIcons name="description" size={24} color={theme === 'dark' ? '#FFFFFF' : '#333'} />
@@ -630,7 +714,6 @@ const Menu = ({ navigation }) => {
         )}
       </ScrollableModal>
 
-      {/* CustomAlert for file deletion */}
       <CustomAlert
         visible={deleteAlertVisible}
         title={languages[language].confirmDeletion}
@@ -642,7 +725,6 @@ const Menu = ({ navigation }) => {
         theme={theme}
       />
 
-      {/* CustomAlert for entry deletion */}
       <CustomAlert
         visible={alertVisible}
         title={languages[language].confirmDeletion}

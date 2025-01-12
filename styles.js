@@ -609,46 +609,46 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   darkSaveButton: {
-    backgroundColor: '#45a049', // Slightly darker green for dark theme
+    backgroundColor: '#45a049',
   },
   darkLoadButton: {
-    backgroundColor: '#1e88e5', // Slightly darker blue for dark theme
+    backgroundColor: '#1e88e5',
   },
   darkNeutralBalance: {
-    color: '#9e9e9e', // Lighter grey for dark theme
+    color: '#9e9e9e',
   },
   darkTotalProfit: {
-    color: '#66bb6a', // Lighter green for dark theme
+    color: '#66bb6a',
   },
   darkTotalLoss: {
-    color: '#ef5350', // Lighter red for dark theme
+    color: '#ef5350',
   },
   darkProductProfit: {
-    color: '#66bb6a', // Lighter green for dark theme
+    color: '#66bb6a',
   },
   darkProductLoss: {
-    color: '#ef5350', // Lighter red for dark theme
+    color: '#ef5350',
   },
   darkProductNeutralBalance: {
-    color: '#9e9e9e', // Lighter grey for dark theme
+    color: '#9e9e9e',
   },
   productTotalsProfit: {
-    color: '#4CAF50', // Green for light mode
+    color: '#4CAF50',
   },
   productTotalsLost: {
-    color: '#F44336', // Red for light mode
+    color: '#F44336',
   },
   productTotalsNeutral: {
-    color: '#757575', // Grey for light mode
+    color: '#757575',
   },
   darkProductTotalsProfit: {
-    color: '#66bb6a', // Green for dark mode
+    color: '#66bb6a',
   },
   darkProductTotalsLost: {
-    color: '#ef5350', // Red for dark mode
+    color: '#ef5350',
   },
   darkProductTotalsNeutral: {
-    color: '#9e9e9e', // Grey for dark mode
+    color: '#9e9e9e',
   },
   darkTableHeader: {
     backgroundColor: '#333',
@@ -722,7 +722,7 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   darkAnimatedContainer: {
-    backgroundColor: '#121212', // Dark mode background
+    backgroundColor: '#121212',
   },
 });
 

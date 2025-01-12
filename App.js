@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StatusBar, View } from 'react-native';
+import { StatusBar, View, Platform } from 'react-native';
 import MainScreen from './MainScreen';
 import Menu from './Menu';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -28,7 +28,13 @@ const AppContent = () => {
 const App = () => {
   useEffect(() => {
     async function setupScreen() {
-      await ScreenOrientation.unlockAsync();
+      if (Platform.OS !== 'web') {
+        try {
+          await ScreenOrientation.unlockAsync();
+        } catch (error) {
+          console.warn('Screen orientation control not available:', error);
+        }
+      }
       StatusBar.setHidden(true);
     }
     setupScreen();

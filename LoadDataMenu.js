@@ -38,7 +38,7 @@ const LoadDataMenu = ({ visible, onClose, onLoad }) => {
     if (selectedSave) {
       try {
         await Storage.removeItem(selectedSave);
-        await loadSavedFiles(); // Refresh the list after deletion
+        await loadSavedFiles();
       } catch (error) {
         console.error('Failed to delete save:', error);
       }

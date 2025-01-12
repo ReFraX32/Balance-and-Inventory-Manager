@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 const createMenuStyles = (theme) => StyleSheet.create({
-  // Options Menu
+
   optionsMenu: {
     backgroundColor: theme === 'dark' ? '#121212' : 'white',
   },
@@ -27,7 +27,6 @@ const createMenuStyles = (theme) => StyleSheet.create({
     backgroundColor: theme === 'dark' ? '#444444' : '#e0e0e0',
   },
 
-  // Search Menu
   searchBarContainer: {
     backgroundColor: theme === 'dark' ? '#333' : '#fff',
     borderBottomColor: theme === 'dark' ? '#555' : '#E0E0E0',
@@ -37,7 +36,6 @@ const createMenuStyles = (theme) => StyleSheet.create({
     color: theme === 'dark' ? '#FFFFFF' : '#000000',
   },
 
-  // Add Product Menu
   addProductModalView: {
     backgroundColor: theme === 'dark' ? '#121212' : '#fff',
   },
@@ -47,17 +45,14 @@ const createMenuStyles = (theme) => StyleSheet.create({
     borderColor: theme === 'dark' ? '#555' : '#E0E0E0',
   },
 
-  // Edit Product Menu
   editProductModalView: {
     backgroundColor: theme === 'dark' ? '#121212' : '#fff',
   },
 
-  // Save Data Menu
   saveDataModalView: {
     backgroundColor: theme === 'dark' ? '#121212' : '#FFFFFF',
   },
 
-  // Load Data Menu
   loadDataMenu: {
     backgroundColor: theme === 'dark' ? '#121212' : 'white',
   },
@@ -88,7 +83,6 @@ const createMenuStyles = (theme) => StyleSheet.create({
     color: theme === 'dark' ? '#FFFFFF' : '#000000',
   },
 
-  // Save and Load Buttons
   bottomButton: {
     backgroundColor: theme === 'dark' ? '#555' : '#3F51B5',
   },
@@ -99,7 +93,6 @@ const createMenuStyles = (theme) => StyleSheet.create({
     color: theme === 'dark' ? '#FFFFFF' : '#333',
   },
 
-  // Modal View
   modalView: {
     backgroundColor: theme === 'dark' ? '#121212' : 'white',
     borderRadius: 20,
@@ -121,36 +114,34 @@ const createMenuStyles = (theme) => StyleSheet.create({
     marginBottom: 20,
   },
 
-  // Bottom buttons container
   bottomButtonsContainer: {
     backgroundColor: theme === 'dark' ? '#121212' : '#F5F5F5',
     borderTopColor: theme === 'dark' ? '#333' : '#E0E0E0',
   },
 
-  // Update or add these styles
   saveButton: {
-    backgroundColor: theme === 'dark' ? '#45a049' : '#4CAF50', // Green
+    backgroundColor: theme === 'dark' ? '#45a049' : '#4CAF50',
   },
   loadButton: {
-    backgroundColor: theme === 'dark' ? '#1e88e5' : '#2196F3', // Light Blue
+    backgroundColor: theme === 'dark' ? '#1e88e5' : '#2196F3',
   },
   neutralBalance: {
-    color: theme === 'dark' ? '#9e9e9e' : '#757575', // Grey
+    color: theme === 'dark' ? '#9e9e9e' : '#757575',
   },
   totalProfit: {
-    color: theme === 'dark' ? '#66bb6a' : '#4CAF50', // Green
+    color: theme === 'dark' ? '#66bb6a' : '#4CAF50',
   },
   totalLoss: {
-    color: theme === 'dark' ? '#ef5350' : '#F44336', // Red
+    color: theme === 'dark' ? '#ef5350' : '#F44336',
   },
   productProfit: {
-    color: theme === 'dark' ? '#66bb6a' : '#4CAF50', // Green
+    color: theme === 'dark' ? '#66bb6a' : '#4CAF50',
   },
   productLoss: {
-    color: theme === 'dark' ? '#ef5350' : '#F44336', // Red
+    color: theme === 'dark' ? '#ef5350' : '#F44336',
   },
   productNeutralBalance: {
-    color: theme === 'dark' ? '#9e9e9e' : '#757575', // Grey
+    color: theme === 'dark' ? '#9e9e9e' : '#757575',
   },
   container: {
     flex: 1,

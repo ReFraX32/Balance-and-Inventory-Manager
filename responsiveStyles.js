@@ -2,10 +2,6 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-const baseStyles = {
-  // ... copy all your existing styles from styles.js here ...
-};
-
 const createResponsiveStyles = () => {
   const isLandscape = width > height;
 

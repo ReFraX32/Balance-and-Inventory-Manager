@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  NativeModules,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -36,15 +37,15 @@ const ProductItem = React.memo(({ product, onEdit, onDelete, language, theme, co
   const isNeutral = profit === 0;
 
   const getTotalProductCostColor = (cost) => {
-    if (cost > 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f'; // darkred
-    if (cost < 0) return theme === 'dark' ? '#66bb6a' : '#388e3c'; // darkgreen
-    return theme === 'dark' ? '#9e9e9e' : '#757575'; // grey
+    if (cost > 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f';
+    if (cost < 0) return theme === 'dark' ? '#66bb6a' : '#388e3c';
+    return theme === 'dark' ? '#9e9e9e' : '#757575';
   };
 
   const getTotalProductSellingPriceColor = (price) => {
-    if (price > 0) return theme === 'dark' ? '#66bb6a' : '#388e3c'; // darkgreen
-    if (price < 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f'; // darkred
-    return theme === 'dark' ? '#9e9e9e' : '#757575'; // grey
+    if (price > 0) return theme === 'dark' ? '#66bb6a' : '#388e3c';
+    if (price < 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f';
+    return theme === 'dark' ? '#9e9e9e' : '#757575';
   };
 
   let profitLossText = '';
@@ -99,7 +100,7 @@ const ProductItem = React.memo(({ product, onEdit, onDelete, language, theme, co
 });
 
 const MainScreen = ({ navigation }) => {
-  const { language } = useLanguage();
+  const { language, updateLanguage } = useLanguage();
   const { theme } = useTheme();
   const { conversionMode } = useConversionMode();
   const { currencySymbol } = useCurrencySymbol();
@@ -143,9 +144,49 @@ const MainScreen = ({ navigation }) => {
     }
   };
 
+  const detectSystemLanguage = () => {
+    try {
+      if (Platform.OS === 'web') {
+        const browserLang = navigator.language || navigator.userLanguage;
+        return browserLang.split('-')[0].toLowerCase();
+      } else {
+        const deviceLanguage = 
+          Platform.OS === 'ios'
+            ? NativeModules.SettingsManager.settings.AppleLocale ||
+              NativeModules.SettingsManager.settings.AppleLanguages[0]
+            : NativeModules.I18nManager.localeIdentifier;
+        return deviceLanguage.split('_')[0].toLowerCase();
+      }
+    } catch (error) {
+      console.error('Error detecting system language:', error);
+      return 'en';
+    }
+  };
+
+  const isSupportedLanguage = (lang) => {
+    const supportedLanguages = ['en', 'es', 'pt', 'fr', 'it', 'de'];
+    return supportedLanguages.includes(lang);
+  };
+
   useEffect(() => {
-    loadData();
-    updateSavedFilesList();
+    const initializeApp = async () => {
+      try {
+        const storedLanguage = await AsyncStorage.getItem('language');
+        if (!storedLanguage) {
+          const systemLang = detectSystemLanguage();
+          const defaultLang = isSupportedLanguage(systemLang) ? systemLang : 'en';
+          await AsyncStorage.setItem('language', defaultLang);
+          updateLanguage(defaultLang);
+        }
+      } catch (error) {
+        console.error('Error initializing language:', error);
+      }
+      
+      loadData();
+      updateSavedFilesList();
+    };
+
+    initializeApp();
   }, []);
 
   const loadData = async () => {
@@ -211,15 +252,15 @@ const MainScreen = ({ navigation }) => {
   };
 
   const getTotalCostColor = (totalCost) => {
-    if (totalCost > 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f'; // darkred
-    if (totalCost < 0) return theme === 'dark' ? '#66bb6a' : '#388e3c'; // darkgreen
-    return theme === 'dark' ? '#9e9e9e' : '#757575'; // grey
+    if (totalCost > 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f';
+    if (totalCost < 0) return theme === 'dark' ? '#66bb6a' : '#388e3c';
+    return theme === 'dark' ? '#9e9e9e' : '#757575';
   };
 
   const getTotalSellingPriceColor = (totalSellingPrice) => {
-    if (totalSellingPrice > 0) return theme === 'dark' ? '#66bb6a' : '#388e3c'; // darkgreen
-    if (totalSellingPrice < 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f'; // darkred
-    return theme === 'dark' ? '#9e9e9e' : '#757575'; // grey
+    if (totalSellingPrice > 0) return theme === 'dark' ? '#66bb6a' : '#388e3c';
+    if (totalSellingPrice < 0) return theme === 'dark' ? '#ff6b6b' : '#d32f2f';
+    return theme === 'dark' ? '#9e9e9e' : '#757575';
   };
 
   const totalProfit = calculateTotalProfit();
@@ -314,7 +355,7 @@ const MainScreen = ({ navigation }) => {
   };
 
   const handleEditProduct = (product) => {
-    setEditingProduct({...product}); // Create a copy of the product
+    setEditingProduct({...product});
     setEditModalVisible(true);
   };
 
@@ -448,12 +489,10 @@ const MainScreen = ({ navigation }) => {
               <MaterialIcons name="chevron-right" size={24} color={theme === 'dark' ? "#fff" : "#888"} />
             </TouchableOpacity>
             
-            {/* Options Icon */}
             <Pressable style={styles.optionsIcon} onPress={() => setOptionsModalVisible(true)}>
               <MaterialIcons name="settings" size={24} color={theme === 'dark' ? "#fff" : "#333"} />
             </Pressable>
 
-            {/* Search Icon - Only show when search is not visible */}
             {!searchVisible && (
               <Pressable style={styles.searchIcon} onPress={toggleSearch}>
                 <MaterialIcons name="search" size={24} color={theme === 'dark' ? "#fff" : "#333"} />
@@ -493,7 +532,6 @@ const MainScreen = ({ navigation }) => {
         </Pressable>
       </KeyboardAvoidingView>
 
-      {/* Save Modal */}
       <ScrollableModal
         visible={saveModalVisible}
         onClose={() => setSaveModalVisible(false)}
@@ -520,7 +558,6 @@ const MainScreen = ({ navigation }) => {
         ]}
       </ScrollableModal>
 
-      {/* Load Modal */}
       <ScrollableModal
         visible={loadModalVisible}
         onClose={() => setLoadModalVisible(false)}
@@ -558,7 +595,6 @@ const MainScreen = ({ navigation }) => {
         ]}
       </ScrollableModal>
 
-      {/* Add Product Modal */}
       <ScrollableModal
         visible={addModalVisible}
         onClose={() => setAddModalVisible(false)}
@@ -618,7 +654,6 @@ const MainScreen = ({ navigation }) => {
         ]}
       </ScrollableModal>
 
-      {/* Edit Product Modal */}
       <ScrollableModal
         visible={editModalVisible}
         onClose={() => setEditModalVisible(false)}
@@ -680,7 +715,6 @@ const MainScreen = ({ navigation }) => {
         )}
       </ScrollableModal>
 
-      {/* CustomAlert for product deletion */}
       <CustomAlert
         visible={alertVisible}
         title={languages[language].confirmDeletion}
@@ -695,7 +729,6 @@ const MainScreen = ({ navigation }) => {
         theme={theme}
       />
 
-      {/* CustomAlert for file deletion */}
       <CustomAlert
         visible={deleteAlertVisible}
         title={languages[language].confirmDeletion}
@@ -707,7 +740,6 @@ const MainScreen = ({ navigation }) => {
         theme={theme}
       />
 
-      {/* Options Menu */}
       <OptionsMenu
         visible={optionsModalVisible}
         onClose={() => setOptionsModalVisible(false)}

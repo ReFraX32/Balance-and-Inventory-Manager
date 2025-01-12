@@ -6,7 +6,7 @@ const loadStyles = StyleSheet.create({
       minHeight: 200,
       width: '90%',
       maxWidth: 400,
-      zIndex: 1001, // Higher than modalOverlay but lower than CustomAlert
+      zIndex: 1001,
     },
     fileList: {
       flex: 1,
