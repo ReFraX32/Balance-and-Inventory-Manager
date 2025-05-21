@@ -2,6 +2,8 @@
 
 Balance and Inventory Manager is a user-friendly Android app designed to help small businesses and individuals efficiently manage their inventory and track financial balances. Whether you’re running a retail store, managing a warehouse, or just keeping track of personal items, this app provides all the essential tools you need to stay organized and in control.
 
+You can see more detailed documentation here: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ReFraX32/-Balance-and-Inventory-Manager)
+
 ## Key Features:
 
 ### Inventory Management:
