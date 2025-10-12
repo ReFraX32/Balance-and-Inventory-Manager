@@ -1,7 +1,7 @@
 {
   "name": "inventorymanagementapp",
   "version": "1.0.0",
-  "homepage": "https://refrax32.github.io/-Balance-and-Inventory-Manager",
+  "homepage": "https://refrax32.github.io/Balance-and-Inventory-Manager",
   "main": "expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
