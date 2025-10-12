@@ -9,8 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web",
-    "predeploy": "npm run build:web",
-    "deploy": "gh-pages -d dist"
+    "predeploy": "npm run build:web && node fix-paths.js",
+    "deploy": "gh-pages -d dist --dotfiles"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
